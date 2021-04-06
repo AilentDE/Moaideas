@@ -1,11 +1,11 @@
-# Dcoker use
+# Dcoker usage steps
 1. "docker build -t (image tag name) ."
 2. "docker run --name (container name) (docker_image)"
     * Add `-d` for backword if work no problem  
     * Add `-v` for save any data in container  
-     `-v (user dir):(container dir)` becareful it will cover files to exited dir
+     `-v (user dir):(container dir)` use carefully because it will cover files to exited dir .
 
-# About Dockerfile
+# Sample Dockerfile
 ```
 FROM python
 
