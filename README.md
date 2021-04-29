@@ -20,7 +20,8 @@ Here is description about these projects , you can see here first then select an
     It's the same with `火車幣_convert` .
     * `KS_老外金屬幣` record follower number before our project start .
     * `KS_projects_collection` collect all projects on [Kickstarter](https://www.kickstarter.com/) and record follower numbers everyday .  
-    But I'd like to change the way of Scrapy .
+    But I'd like to change the way of Scrapy .  
+* `twitter2discord` check new tweet and notice in discord . Used with TWITTER-API and DISCORD-WEBHOOK . It's seems to IFTTT but more detail settings .
 * `haruka_see` just interest in Vtuber's subscription growing rate , so I use Youtube API and see the subscription number everyday .
 There are many webside for this job now , so if you are interest in it , you can search many webside about it .  
 * `tender_list` collect every tender whitch our company care and report in our slack APP .
