@@ -16,6 +16,15 @@ RUN pip install bs4 && \
     pip install html5lib && \
     pip install requests
 
+RUN apt-get update \
+    &&  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+    
+RUN TZ=Asia/Taipei \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone \
+    && dpkg-reconfigure -f noninteractive tzdata 
+
 CMD ["python", "-u", "火車幣_savedata.py"]
 ```
-* use `-u` in CMD for print immediately
+* Last two rows for setting docker container localtime  
+* use `-u` in CMD for print immediately  
