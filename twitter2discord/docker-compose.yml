@@ -1,0 +1,31 @@
+version: '3'
+services:
+    twitter_haruka:
+        image: twitter2discord
+        container_name: twitter_haruka
+        restart: always
+        environment:
+            - TWITTER_TOKEN=${TWITTER_TOKEN}
+            - WEBHOOK=${HARUKA_WEBHOOK}
+            - MEMBER_NAME=haruka_owl
+            - MEMBER_ID=${HARUKA_ID}
+
+    twitter_lyra:
+        image: twitter2discord
+        container_name: twitter_lyra
+        restart: always
+        environment: 
+            - TWITTER_TOKEN=${TWITTER_TOKEN}
+            - WEBHOOK=${LYRA_WEBHOOK}
+            - MEMBER_NAME=cygnus_lyra
+            - MEMBER_ID=${LYRA_ID}
+    
+    twitter_kuyou:
+        image: twitter2discord
+        container_name: twitter_kuyou
+        restart: always
+        environment: 
+            - TWITTER_TOKEN=${TWITTER_TOKEN}
+            - WEBHOOK=${KUYOU_WEBHOOK}
+            - MEMBER_NAME=KuyouAngel
+            - MEMBER_ID=${KUYOU_ID}
