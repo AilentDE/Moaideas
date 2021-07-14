@@ -23,7 +23,7 @@ def twitter_request(time=check_time, query_str=query_str, twitter_token=twitter_
     headers = {
         "Authorization": "Bearer {}".format(twitter_token)
     }
-    return requests.get(url, headers=headers).json()
+    return requests.get(url, headers=headers, timeout=5).json()
 
 def discord_webhook(text_message, webhook_url=webhook):
     headers = {
@@ -32,7 +32,7 @@ def discord_webhook(text_message, webhook_url=webhook):
     payload = {
         "content": text_message
     }
-    return requests.post(webhook_url, data=json.dumps(payload), headers=headers)
+    return requests.post(webhook_url, data=json.dumps(payload), headers=headers, timeout=5)
 
 def datetimePLUS1(time_str):
     return (datetime.strptime(time_str[:-5], '%Y-%m-%dT%H:%M:%S') + timedelta(seconds=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
