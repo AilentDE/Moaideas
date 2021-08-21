@@ -1,0 +1,14 @@
+version: '3'
+services:
+    app:
+        build: image/
+        container_name: HLKsee
+        volumes:
+            - /home/moaideas/桌面/de-personal/HLKsee/save_data:/app/data
+        restart: always
+        environment:
+            - API_KEY=${API_KEY}
+            - HARUKA=${HARUKA}
+            - LYRA=${LYRA}
+            - KUYOU=${KUYOU}
+            - WEBHOOK=${WEBHOOK}
