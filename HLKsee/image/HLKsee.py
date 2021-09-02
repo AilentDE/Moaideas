@@ -78,7 +78,22 @@ if __name__=='__main__':
         time_start(9)
         collect = []
         ttime = date.today()
-        const = ''
+        const = {
+            "embeds": [{
+                "author": {
+                    "name": "比鄰星域 Proxima Sector",
+                    "url": "https://twitter.com/proximasector",
+                    "icon_url": "https://pbs.twimg.com/profile_images/1397448146221817858/a3vMNZ0a_400x400.jpg"
+                },
+                "description": "Report subscriber count with **YOUTUBE API**",
+                "color": 8941820,
+                "fields": [],
+                "footer": {
+                    "text": ttime.strftime("%m月%d日 %A"),
+                    "icon_url": "https://lh3.googleusercontent.com/ogw/ADea4I7qJoxqf_hd8ZdWJC-UQYgropCH7oOHxl0jUIR-0Q=s83-c-mo"
+                }
+            }]
+        }
 
         for name,target in zip(['haruka', 'lyra', 'kuyou'], [HARUKA, LYRA, KUYOU]):
             url = 'https://www.googleapis.com/youtube/v3/channels' +\
@@ -99,8 +114,18 @@ if __name__=='__main__':
 
         if yesterday:
             for x, y in zip(yesterday, today):
-                const += '{}: {:,} {:+d}\n'.format(y[0], y[1], y[1]-x[1])
+                const['embeds'][0]['fields'].append(
+                    {
+                        "name": y[0],
+                        "value": "{:,}  ({:+d})".format(y[1], y[1]-x[1])
+                    }
+                )
         else:
             for y in today:
-                const += '{}: {:,}\n'.format(y[0], y[1])
-        requests.post(WEBHOOK, json={"content": const}, timeout=5)
+                const['embeds'][0]['fields'].append(
+                    {
+                        "name": y[0],
+                        "value": "{:,}".format(y[1])
+                    }
+                )
+        requests.post(WEBHOOK, json=const, timeout=5)
