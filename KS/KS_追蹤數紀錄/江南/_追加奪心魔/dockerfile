@@ -1,0 +1,20 @@
+FROM python
+
+WORKDIR /app
+
+COPY requirements.txt requirements.txt
+
+RUN pip3 install -r requirements.txt
+
+RUN apt-get update -y \
+    && apt-get install -y tzdata
+
+ENV TZ=Asia/Taipei
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone \
+    && dpkg-reconfigure -f noninteractive tzdata 
+
+COPY Mind_reaver.py app.py
+
+CMD ["python", "-u", "app.py"]
