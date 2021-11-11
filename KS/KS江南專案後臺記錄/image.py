@@ -1,0 +1,79 @@
+import os
+import time
+import math
+import pymongo
+import requests
+from datetime import datetime
+from bs4 import BeautifulSoup
+
+def Bot_Message(channel, text):
+    payload={
+        "token":os.getenv('API_KEY'),
+        "channel":channel,
+        "text":'{}'.format(text)} 
+    r = requests.post("https://slack.com/api/chat.postMessage", params=payload) 
+
+if __name__=='__main__':
+    MONGODB = os.getenv('MONGODB')
+    EMAIL = os.getenv('EMAIL')
+    PASS = os.getenv('PASSWORD')
+
+    try:
+        while True:
+            start = time.time()
+            rs = requests.Session()
+            url = 'https://www.kickstarter.com/login?then=%2Fprojects%2Fmoaideas%2Fjiangnan-life-of-gentry%2Fdashboard%3Fref%3Dcreator_nav'
+            r = rs.get(url, timeout=10)
+
+            myclient = pymongo.MongoClient(MONGODB)
+            db = myclient.jiangnan
+            ttime = datetime.now()
+
+            '''
+            statu data
+            '''
+            submit = {}
+            # login (reffer dashboard)
+            url = 'https://www.kickstarter.com/user_sessions'
+            rs.headers.update({'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'})
+            data = {
+                'utf8': '✓',
+                'authenticity_token': BeautifulSoup(r.text, 'html5lib').find('input', attrs={'name': 'authenticity_token'})['value'],
+                'source': 'login',
+                'then': '/projects/moaideas/jiangnan-life-of-gentry/dashboard?ref=creator_nav',
+                'user_session[email]': EMAIL,
+                'user_session[password]': PASS,
+                'commit': '登入',
+                'user_session[remember_me]': '0',
+                'user_session[remember_me]': '1'
+            }
+            r = rs.post(url, data=data, timeout=10)
+            for x,y in zip(BeautifulSoup(r.text, 'html5lib').select_one('.stats-numbers').select('.gray-colored'), BeautifulSoup(r.text, 'html5lib').select_one('.stats-numbers').select('h1')):
+                submit[x.text.strip()] = y.text.strip()
+            for x,y in zip(BeautifulSoup(r.text, 'html5lib').select_one('.flex.mr2').select('.type-14'), BeautifulSoup(r.text, 'html5lib').select_one('.flex.mr2').select('.type-38')):
+                submit[x.text.strip()] = y.text.strip()
+            submit['date'] = ttime
+            collection = db.statu
+            collection.insert_one(submit)
+
+            '''
+            reffer data
+            '''
+            submit = []
+            r = rs.get('https://www.kickstarter.com/project_referrers/refs/stats?project_id=171193344', timeout=10)
+            for i in range(1, math.ceil(r.json()['total']/20)+1):
+                r = rs.get('https://www.kickstarter.com/project_referrers/refs/stats?page={}&project_id=171193344'.format(i), timeout=10)
+                for x in r.json()['data']:
+                    x['date'] = ttime
+                    submit.append(x)
+            collection = db.reffer
+            collection.insert_many(submit)
+
+            myclient.close()
+            rs.close()
+
+            print('Savedata at {}'.format(ttime))
+            time.sleep(3600-(time.time()-start))
+    except Exception as e:
+        print(e)
+        Bot_Message('kickstarter_news', '{}'.format(e))

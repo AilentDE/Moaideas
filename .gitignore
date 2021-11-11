@@ -139,3 +139,4 @@ cython_debug/
 
 # Personal memo
 BEFORE_DOCKER.txt
+prepare.ipynb
