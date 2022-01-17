@@ -50,15 +50,15 @@ class db_method:
         self.cur = self.db.cursor()
 
     def create_db(self):
-        self.cur.execute('''CREATE TABLE IF NOT EXISTS watches(id integer PRIMARY KEY AUTOINCREMENT, date date, watches integer)''')
+        self.cur.execute('''CREATE TABLE IF NOT EXISTS jiangnan(id integer PRIMARY KEY AUTOINCREMENT, date date, watches integer)''')
         self.db.commit()
 
     def save_data(self, data):
-        self.cur.execute("INSERT INTO watches(date, watches) VALUES (?, ?)", data)
+        self.cur.execute("INSERT INTO jiangnan(date, watches) VALUES (?, ?)", data)
         self.db.commit()
 
     def search_by_date(self, key):
-        return self.cur.execute("SELECT date, watches FROM watches WHERE date = (?)", (key,))
+        return self.cur.execute("SELECT date, watches FROM jiangnan WHERE date = (?)", (key,))
     
     def close_db(self):
         self.db.close()
@@ -71,7 +71,7 @@ def Bot_Message(channel, text):
     r = requests.post("https://slack.com/api/chat.postMessage", params=payload) 
 
 if __name__ == '__main__':
-    project_url = 'https://www.kickstarter.com/projects/moaideas/jiangnan-life-of-gentry'
+    project_url = 'https://www.kickstarter.com/projects/moaideas/jiangnan-life-of-gentry-re'
     db = db_method()
     db.create_db()
     db.close_db()
@@ -82,7 +82,10 @@ if __name__ == '__main__':
             today = db.search_by_date(date.today()).fetchone()
             if not today:
                 # get csrf
-                r1 = requests.get(project_url)
+                headers = {
+                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'
+                }
+                r1 = requests.get(project_url, headers=headers)
                 token = BeautifulSoup(r1.text, 'html5lib').find('meta', attrs={'name':'csrf-token'})['content']
                 cookies = r1.cookies['_ksr_session']
 
@@ -90,7 +93,8 @@ if __name__ == '__main__':
                 url = 'https://www.kickstarter.com/graph'
                 headers = {'content-type':'application/json',
                             'cookie':'_ksr_session={}'.format(cookies),
-                            'x-csrf-token':'{}'.format(token)}
+                            'x-csrf-token':'{}'.format(token),
+                            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'}
                 key_word_list = project_url.split('/')
                 payloads = {"operationName":"PrelaunchPage",
                             "variables":{"slug":"{}/{}".format(key_word_list[-2], key_word_list[-1])},
@@ -115,4 +119,4 @@ if __name__ == '__main__':
                 time_start(9)
     except Exception as e:
         print(e)
-        Bot_Message('kickstarter_news', '{}'.format(e))
+        Bot_Message('spider_status', '{}'.format(e))
