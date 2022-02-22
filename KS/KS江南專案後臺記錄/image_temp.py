@@ -63,25 +63,24 @@ if __name__=='__main__':
             submit['date'] = ttime
             collection = db.statu
             collection.insert_one(submit)
-            print('Save STATU data at {}'.format(datetime.now()))
 
             '''
             reffer data
             '''
-            submit = []
-            r = rs.get('https://www.kickstarter.com/project_referrers/refs/stats?project_id=142191257', timeout=10)
-            for i in range(1, math.ceil(r.json()['total']/20)+1):
-                r = rs.get('https://www.kickstarter.com/project_referrers/refs/stats?page={}&project_id=142191257'.format(i), timeout=10)
-                for x in r.json()['data']:
-                    x['date'] = ttime
-                    submit.append(x)
-            collection = db.reffer
-            collection.insert_many(submit)
-            print('Save REFFER data at {}'.format(datetime.now()))
+            # submit = []
+            # r = rs.get('https://www.kickstarter.com/project_referrers/refs/stats?project_id=142191257', timeout=10)
+            # for i in range(1, math.ceil(r.json()['total']/20)+1):
+            #     r = rs.get('https://www.kickstarter.com/project_referrers/refs/stats?page={}&project_id=142191257'.format(i), timeout=10)
+            #     for x in r.json()['data']:
+            #         x['date'] = ttime
+            #         submit.append(x)
+            # collection = db.reffer
+            # collection.insert_many(submit)
 
             myclient.close()
             rs.close()
-            
+
+            print('Savedata at {}'.format(ttime))
             time.sleep(3600-(time.time()-start))
     except Exception as e:
         print(e)

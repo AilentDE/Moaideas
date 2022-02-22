@@ -83,7 +83,8 @@ if __name__ == '__main__':
             if not today:
                 # get csrf
                 headers = {
-                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'
+                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36',
+                    'sec-ch-ua': '" Not;A Brand";v="99", "Google Chrome";v="97", "Chromium";v="97"'
                 }
                 r1 = requests.get(project_url, headers=headers)
                 token = BeautifulSoup(r1.text, 'html5lib').find('meta', attrs={'name':'csrf-token'})['content']
@@ -94,7 +95,8 @@ if __name__ == '__main__':
                 headers = {'content-type':'application/json',
                             'cookie':'_ksr_session={}'.format(cookies),
                             'x-csrf-token':'{}'.format(token),
-                            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'}
+                            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36',
+                            'sec-ch-ua': '" Not;A Brand";v="99", "Google Chrome";v="97", "Chromium";v="97"'}
                 key_word_list = project_url.split('/')
                 payloads = {"operationName":"PrelaunchPage",
                             "variables":{"slug":"{}/{}".format(key_word_list[-2], key_word_list[-1])},
