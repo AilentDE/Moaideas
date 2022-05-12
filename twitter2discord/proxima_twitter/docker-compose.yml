@@ -6,9 +6,9 @@ services:
         restart: always
         environment:
             - TWITTER_TOKEN=${TWITTER_TOKEN}
+            - SUB_TOKEN=${SUB_TOKEN}
             - WEBHOOK=${PROXIMA_GALLERY}
             - QUERY_STR=${GALLERY_QUERY}
-            - PROXIMA_TAG=proxima_gallery
 
     proxima_meme:
         image: proxima_twitter
@@ -16,9 +16,9 @@ services:
         restart: always
         environment: 
             - TWITTER_TOKEN=${TWITTER_TOKEN}
+            - SUB_TOKEN=${SUB_TOKEN}
             - WEBHOOK=${PROXIMA_MEME}
             - QUERY_STR=${MEME_QUERY}
-            - PROXIMA_TAG=proxima_meme
     
     proxima_schedule:
         image: proxima_twitter
@@ -26,6 +26,6 @@ services:
         restart: always
         environment: 
             - TWITTER_TOKEN=${TWITTER_TOKEN}
+            - SUB_TOKEN=${SUB_TOKEN}
             - WEBHOOK=${PROXIMA_SCHEDULE}
             - QUERY_STR=${SCHEDULE_QUERY}
-            - PROXIMA_TAG=proxima_schedule

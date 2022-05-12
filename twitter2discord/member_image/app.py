@@ -48,10 +48,10 @@ if __name__=='__main__':
             else:
                 pass
 
-            time.sleep(5) #limited by 900 request / 15 min
-        except ValueError:
-            print('[{}] WRONG JSONDECODE'.format(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')))
+            time.sleep(15) #limited by 300 request / 15 min by APP
+        except ValueError as e:
+            print('[{}] WRONG JSONDECODE: {}'.format(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'), e))
             time.sleep(5)
-        except:
-            print('[{}] Other WRONG'.format(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')))
+        except Exception as e:
+            print('[{}] Other WRONG: {}'.format(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'), e))
             time.sleep(5)

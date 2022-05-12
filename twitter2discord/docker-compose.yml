@@ -29,3 +29,23 @@ services:
             - WEBHOOK=${KUYOU_WEBHOOK}
             - MEMBER_NAME=KuyouAngel
             - MEMBER_ID=${KUYOU_ID}
+
+    twitter_sara:
+        image: twitter2discord
+        container_name: twitter_sara
+        restart: always
+        environment: 
+            - TWITTER_TOKEN=${TWITTER_TOKEN}
+            - WEBHOOK=${SARA_WEBHOOK}
+            - MEMBER_NAME=Vtuber_Sara
+            - MEMBER_ID=${SARA_ID}
+
+    twitter_paradise:
+        image: twitter2discord
+        container_name: twitter_paradise
+        restart: always
+        environment: 
+            - TWITTER_TOKEN=${TWITTER2_TOKEN}
+            - WEBHOOK=${PARADISE_WEBHOOK}
+            - MEMBER_NAME=paradise_1206
+            - MEMBER_ID=${PARADISE_ID}
