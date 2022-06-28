@@ -1,0 +1,11 @@
+version: "3"
+services:
+    app:
+        build: ./image
+        image: tender-list
+        container_name: tender-list
+        environment:
+            - TOKEN=${TOKEN}
+        restart: unless-stopped
+        volumes:
+            - ./data:/data

@@ -1,6 +1,7 @@
 version: '3'
 services:
     proxima_gallery:
+        build: ./proxima_image
         image: proxima_twitter
         container_name: proxima_gallery
         restart: always
