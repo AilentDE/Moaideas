@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 import os
-import json
 import sqlite3
 import time
 from datetime import datetime, date, timedelta
@@ -58,33 +57,49 @@ def request(tag='', org=''):
         'radProctrgCate': ''
     }
     header = {
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
     }
-    return requests.get(url, params=payload, headers=header, timeout=5)
+    r = requests.get(url, params=payload, headers=header, timeout=10)
+    return r
 
 # 發送至TEAMS WEBHOOK
 TOKEN = os.getenv('TOKEN')
-def Bot_Message(message=[{"type": "TextBlock",'text': '**No new tender now.**'}]):
-    url = TOKEN
+TOKEN_LOG = os.getenv('TOKENLOG')
+def Bot_Message(message=[{"type": "TextBlock",'text': '**No new tender now.**'}], to_de=False, token=TOKEN):
+    url = token
     headers = {
         'Content-type': 'application/json'
     }
     data = {
-    "type":"message",
-        "attachments":[
+        "type": "message",
+        "attachments": [
             {
-                "contentType":"application/vnd.microsoft.card.adaptive",
-                "contentUrl": '',
-                "content":{
-                    "$schema":"http://adaptivecards.io/schemas/adaptive-card.json",
-                    "type":"AdaptiveCard",
-                    "version":"1.2",
-                    "body": message
+                "contentType": "application/vnd.microsoft.card.adaptive",
+                "content": {
+                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                    "type": "AdaptiveCard",
+                    "version": "1.2",
+                    "body": message,
+                    "msteams": {
+                        "width": "Full"
+                    }
                 }
             }
         ]
     }
-    requests.post(url, headers=headers, data=json.dumps(data), timeout=5)
+    if to_de:
+        data['attachments']['content']['msteams']['entities'] = [
+            {
+                "type": "mention",
+                "text": "<at>mention</at>",
+                "mentioned": {
+                    "id": "de@distantnova.com",
+                    "name": "DE活下去"
+                }
+            }
+        ]
+    r = requests.post(url, headers=headers, json=data, timeout=10)
+    return r
 
 # 資料庫設置
 class db_method:
@@ -130,15 +145,23 @@ def get_list(item):
     return (number, name, url, start_date, end_date, budget, save_date)
 
 # tag設定
-tags = ['桌遊','教材', '教具', '桌上遊戲', '桌上型遊戲', '遊戲', '兒童', '益智', '贈品', '禮品', '探索', '紙牌', '沉浸式體驗', '玩具', '解謎', '實境解謎', '文化轉譯', '創意', '文創', '宣導品']
+tags = ['桌遊','教材', '教具', '桌上遊戲', '桌上型遊戲', '遊戲', '兒童', '益智', '贈品', '禮品', '探索', '紙牌', '沉浸式體驗', '玩具', '解謎', '實境解謎', '文化轉譯', '創意', '文創', '宣導品', '歌曲']
 org_tags=['基隆市文化局']
 
-# 2022月份工作日設定
+# 2023跟2024月份工作日設定
 
 # 周一到週五放假的日期
-HOLIDAY = ["2023-06-22", "2023-06-23", "2023-09-29", "2023-10-09", "2023-10-10"]
+HOLIDAY = ["2023-06-22", "2023-06-23", "2023-09-29", "2023-10-09", "2023-10-10",
+            "2024-01-01",
+            "2024-02-08", "2024-02-09", "2024-02-12", "2024-02-13", "2024-02-14", "2024-02-28",
+            "2024-04-04", "2024-04-05",
+            "2024-06-10",
+            "2024-09-17",
+            "2024-10-10",
+            "2025-01-01"]
 # 週六週日還要上班的日期
-WORKDAY = ["2023-06-17", "2023-09-23"]
+WORKDAY = ["2023-06-17", "2023-09-23",
+           "2024-02-17"]
 
 if __name__ == '__main__':
     check_point = 0
@@ -146,6 +169,7 @@ if __name__ == '__main__':
     db = db_method()
     db.create_db()
     db.close_db()
+    print('系統已準備啟動。')
 
     if datetime.now().hour<9 or datetime.now().hour>=15:
         time_start(9)
@@ -164,7 +188,8 @@ if __name__ == '__main__':
             else:
                 time_start(9)
                 continue
-
+            
+            # 開始爬蟲
             item_list = []
             '''
             Normal tag
@@ -251,7 +276,10 @@ if __name__ == '__main__':
                 time_start(9)
             else:
                 time_start(15)
-        except:
+        except Exception as e:
             check_point += 1
-            Bot_Message([{"type": "TextBlock",'text': '__Here is some **ERROR** appeared__'}])
-            time.sleep(5)
+            Bot_Message([{"type": "TextBlock",'text': '__Here is some **ERROR** appeared__ <at>mention</at>'}], True)
+            requests.post(TOKEN_LOG,
+                headers={'Content-type': 'application/json'},
+                json={"text":"{}".format(e)},
+                timeout=30)

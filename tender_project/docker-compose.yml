@@ -6,6 +6,7 @@ services:
         container_name: tender-list
         environment:
             - TOKEN=${TOKEN}
+            - TOKENLOG=${TOKENLOG}
         restart: unless-stopped
         volumes:
             - ./data:/data
