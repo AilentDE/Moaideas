@@ -59,7 +59,7 @@ def request(tag='', org=''):
     header = {
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
     }
-    r = requests.get(url, params=payload, headers=header, timeout=10)
+    r = requests.get(url, params=payload, headers=header, timeout=30)
     return r
 
 # 發送至TEAMS WEBHOOK
@@ -88,7 +88,7 @@ def Bot_Message(message=[{"type": "TextBlock",'text': '**No new tender now.**'}]
         ]
     }
     if to_de:
-        data['attachments']['content']['msteams']['entities'] = [
+        data['attachments'][0]['content']['msteams']['entities'] = [
             {
                 "type": "mention",
                 "text": "<at>mention</at>",
