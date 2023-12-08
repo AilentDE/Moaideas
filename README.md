@@ -25,4 +25,4 @@ Here is description about these projects , you can see here first then select an
 * `twitter2discord` check new tweet and notice in discord . Used with TWITTER-API and DISCORD-WEBHOOK . It's seems to IFTTT but more detail settings .
 * `haruka_see` just interest in Vtuber's subscription growing rate , so I use Youtube API and see the subscription number everyday .
 There are many webside for this job now , so if you are interest in it , you can search many webside about it .  
-* `tender_list` collect every tender whitch our company care and report in our slack APP .
+* `tender_list` collect every tender whitch our company care and report to our ~~slack APP~~ teams .
