@@ -2,40 +2,9 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import sqlite3
-import time
-from datetime import datetime, date, timedelta
-
-# 時間阻斷
-def time_start(hour):
-    # 時
-    while True:
-        if datetime.now().hour == (hour-1):
-            break
-        else:
-            time.sleep(3600)
-            continue
-
-    # 分
-    while True:
-        if datetime.now().minute == 59:
-            break
-        else:
-            time.sleep(60)
-            continue
-
-    # 秒
-    while True:
-        if datetime.now().second >= 50:
-            break
-        else:
-            time.sleep(5)
-            continue
-
-    while True:
-        if datetime.now().hour == hour:
-            break
-        else:
-            continue
+from datetime import datetime, date, timedelta, timezone
+from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 # 請求預設
 def request(tag='', org=''):
@@ -145,7 +114,7 @@ def get_list(item):
     return (number, name, url, start_date, end_date, budget, save_date)
 
 # tag設定
-tags = ['桌遊','教材', '教具', '遊戲', '兒童', '益智', '贈品', '禮品', '探索', '紙牌', '沉浸式體驗', '玩具', '解謎', '文化轉譯', '創意', '文創', '宣導品', '歌曲']
+tags = ['桌遊','教材', '教具', '遊戲', '兒童', '益智', '贈品', '禮品', '探索', '紙牌', '沉浸式體驗', '玩具', '解謎', '文化轉譯', '創意', '文創', '宣導品', '歌曲', '動畫', '影片', '活動企劃', '典禮', '記者會', '行銷活動', '虛擬', '吉祥物', '3D建模', '元宇宙', 'AR', 'VR' ]
 org_tags=['基隆市文化局']
 
 # 2023跟2024月份工作日設定
@@ -169,117 +138,124 @@ if __name__ == '__main__':
     db = db_method()
     db.create_db()
     db.close_db()
-    print('系統已準備啟動。')
-
-    if datetime.now().hour<9 or datetime.now().hour>=15:
-        time_start(9)
-    else:
-        time_start(15)
-    print('執行時間：\n', datetime.now())
+    current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    print(f'系統已準備啟動。 - 現在UTC時間：{current_time}')
     
-    while check_point <5:
-        try:
-            # 工作判定器
-            today = datetime.now()
-            if (today.weekday()<=4) and (today.strftime("%Y-%m-%d") not in HOLIDAY):
-                pass
-            elif today.strftime("%Y-%m-%d")in WORKDAY:
-                pass
-            else:
-                time_start(9)
-                continue
-            
-            # 開始爬蟲
-            item_list = []
-            '''
-            Normal tag
-            '''
-            for tag in tags:
-                    r = request(tag)
-                    soup = BeautifulSoup(r.text, 'html5lib')
-
-                    items = soup.select_one('#tpam').select_one('tbody').select('tr')
-                    if items[0].text == '無符合條件資料':
-                        continue
-
-                    for item in items:
-                        item_list.append(get_list(item))
-            '''
-            Organ tag
-            '''
-            for org in org_tags:
-                    r = request(tag)
-                    soup = BeautifulSoup(r.text, 'html5lib')
-
-                    items = soup.select_one('#tpam').select_one('tbody').select('tr')
-                    if items[0].text == '無符合條件資料':
-                        continue
-
-                    for item in items:
-                        item_list.append(get_list(item))
-            
-            # 去重複當日data
-            re_item_list = []
-            for data in item_list:
-                if data not in re_item_list:
-                    re_item_list.append(data)
-            item_list = []
-
-            # 去除已經紀錄data
-            db = db_method()
-            old_tender = db.old_datas(date.today()-timedelta(days=60))
-            for item in re_item_list:
-                if item[0] not in old_tender:
-                    item_list.append(item)
-            
-            # 發布內容
-            if len(item_list) == 0:
-                Bot_Message()
-            else:
-                message = []
-                message_count = 0
-                for item in item_list:
-                    if item[5]:
-                        message.append(
-                            {
-                                'type': 'TextBlock',
-                                'text': '[{}]({})\r- 預算: {:,}\r- 截止日期: {}'.format(item[1], item[2], item[5], item[4])
-                            }
-                        )
-                    else:
-                        message.append(
-                            {
-                                'type': 'TextBlock',
-                                'text': '[{}]({})\r- 預算: {}\r- 截止日期: {}'.format(item[1], item[2], item[5], item[4])
-                            }
-                        )
-                    message_count +=1
-                    if message_count ==10:
-                        Bot_Message(message)
-                        message = []
-                        message_count = 0
-                    else:
-                        continue
-                if message_count == 0:
+    def job():
+        while check_point <5:
+            try:
+                # 工作日執行判定
+                today = datetime.now(timezone.utc) + timedelta(hours=8)
+                if (today.weekday()<=4) and (today.strftime("%Y-%m-%d") not in HOLIDAY):
+                    pass
+                elif today.strftime("%Y-%m-%d")in WORKDAY:
                     pass
                 else:
-                    Bot_Message(message)
+                    break
+                
+                # 開始爬蟲
+                item_list = []
+                '''
+                Normal tag
+                '''
+                for tag in tags:
+                        r = request(tag)
+                        soup = BeautifulSoup(r.text, 'html5lib')
 
-            # 儲存data
-            db.save_datas(item_list)
-            db.close_db()
+                        items = soup.select_one('#tpam').select_one('tbody').select('tr')
+                        if items[0].text == '無符合條件資料':
+                            continue
 
-            check_point = 0
-            del item_list, re_item_list
+                        for item in items:
+                            item_list.append(get_list(item))
+                '''
+                Organ tag
+                '''
+                for org in org_tags:
+                        r = request(tag)
+                        soup = BeautifulSoup(r.text, 'html5lib')
 
-            if datetime.now().hour<9 or datetime.now().hour>=15:
-                time_start(9)
-            else:
-                time_start(15)
-        except Exception as e:
-            check_point += 1
-            Bot_Message([{"type": "TextBlock",'text': '__Here is some **ERROR** appeared__ <at>mention</at>'}], True)
-            requests.post(TOKEN_LOG,
-                headers={'Content-type': 'application/json'},
-                json={"text":"{}".format(e)},
-                timeout=30)
+                        items = soup.select_one('#tpam').select_one('tbody').select('tr')
+                        if items[0].text == '無符合條件資料':
+                            continue
+
+                        for item in items:
+                            item_list.append(get_list(item))
+                
+                # 去重複當日data
+                re_item_list = []
+                for data in item_list:
+                    if data not in re_item_list:
+                        re_item_list.append(data)
+                item_list = []# 清空給結果輸出用
+
+                # 去除已經紀錄data
+                db = db_method()
+                old_tender = db.old_datas(date.today()-timedelta(days=60)+timedelta(hours=8))
+                for item in re_item_list:
+                    if item[0] not in old_tender:
+                        item_list.append(item)
+                
+                # 發布內容
+                if len(item_list) == 0:
+                    Bot_Message()
+                else:
+                    message = []
+                    message_count = 0
+                    for item in item_list:
+                        if item[5]:
+                            message.append(
+                                {
+                                    'type': 'TextBlock',
+                                    'text': '[{}]({})\r- 預算: {:,}\r- 截止日期: {}'.format(item[1], item[2], item[5], item[4])
+                                }
+                            )
+                        else:
+                            message.append(
+                                {
+                                    'type': 'TextBlock',
+                                    'text': '[{}]({})\r- 預算: {}\r- 截止日期: {}'.format(item[1], item[2], item[5], item[4])
+                                }
+                            )
+                        message_count +=1
+                        if message_count ==10:
+                            Bot_Message(message)
+                            message = []
+                            message_count = 0
+                        else:
+                            continue
+                    if message_count == 0:
+                        pass
+                    else:
+                        Bot_Message(message)
+
+                # 儲存data
+                db.save_datas(item_list)
+                db.close_db()
+
+                check_point = 0
+                del item_list, re_item_list
+            except Exception as e:
+                check_point += 1
+                Bot_Message([{"type": "TextBlock",'text': '__Here is some **ERROR** appeared__ <at>mention</at>'}], True)
+                requests.post(TOKEN_LOG,
+                    headers={'Content-type': 'application/json'},
+                    json={"text":"{}".format(e)},
+                    timeout=30
+                )
+    
+    # 排程執行
+    scheduler = BlockingScheduler(timezone=timezone(timedelta(hours=8)))
+    
+    # 設定每天9點與15點執行
+    scheduler.add_job(job, CronTrigger(hour=9, minute=0, second=0))
+    scheduler.add_job(job, CronTrigger(hour=15, minute=0, second=0))
+
+    try:
+        # 開始 scheduler
+        print('開始定時任務...')
+        scheduler.start()
+    except (KeyboardInterrupt, SystemExit):
+        # 如果有 KeyboardInterrupt 或 SystemExit，停止 scheduler
+        print('手動停止定時任務...')
+        scheduler.shutdown()
