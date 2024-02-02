@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import sqlite3
+import pytz
 from datetime import datetime, date, timedelta, timezone
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -114,7 +115,7 @@ def get_list(item):
     return (number, name, url, start_date, end_date, budget, save_date)
 
 # tag設定
-tags = ['桌遊','教材', '教具', '遊戲', '兒童', '益智', '贈品', '禮品', '探索', '紙牌', '沉浸式體驗', '玩具', '解謎', '文化轉譯', '創意', '文創', '宣導品', '歌曲', '動畫', '影片', '活動企劃', '典禮', '記者會', '行銷活動', '虛擬', '吉祥物', '3D建模', '元宇宙', 'AR', 'VR' ]
+tags = ['桌遊', '教材', '教具', '遊戲', '兒童', '益智', '贈品', '禮品', '探索', '紙牌', '沉浸式體驗', '玩具', '解謎', '文化轉譯', '創意', '文創', '宣導品', '歌曲', '動畫', '影片', '活動企劃', '典禮', '記者會', '行銷活動', '虛擬', '吉祥物', '3D建模', '元宇宙', '實境' ]
 org_tags=['基隆市文化局']
 
 # 2023跟2024月份工作日設定
@@ -141,11 +142,11 @@ if __name__ == '__main__':
     current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     print(f'系統已準備啟動。 - 現在UTC時間：{current_time}')
     
-    def job():
+    def job(check_point=0):
         while check_point <5:
             try:
                 # 工作日執行判定
-                today = datetime.now(timezone.utc) + timedelta(hours=8)
+                today = datetime.now(pytz.timezone('Asia/Taipei'))
                 if (today.weekday()<=4) and (today.strftime("%Y-%m-%d") not in HOLIDAY):
                     pass
                 elif today.strftime("%Y-%m-%d")in WORKDAY:
@@ -191,7 +192,7 @@ if __name__ == '__main__':
 
                 # 去除已經紀錄data
                 db = db_method()
-                old_tender = db.old_datas(date.today()-timedelta(days=60)+timedelta(hours=8))
+                old_tender = db.old_datas(datetime.now(pytz.timezone('Asia/Taipei')).date()-timedelta(days=60))
                 for item in re_item_list:
                     if item[0] not in old_tender:
                         item_list.append(item)
@@ -245,11 +246,11 @@ if __name__ == '__main__':
                 )
     
     # 排程執行
-    scheduler = BlockingScheduler(timezone=timezone(timedelta(hours=8)))
-    
+    scheduler = BlockingScheduler()
+
     # 設定每天9點與15點執行
-    scheduler.add_job(job, CronTrigger(hour=9, minute=0, second=0))
-    scheduler.add_job(job, CronTrigger(hour=15, minute=0, second=0))
+    scheduler.add_job(job, CronTrigger(hour=1, minute=0, second=0))
+    scheduler.add_job(job, CronTrigger(hour=7, minute=0, second=0))
 
     try:
         # 開始 scheduler

@@ -1,9 +1,6 @@
 FROM python:3.12-slim
 
-RUN pip install requests \
-    && pip install bs4 \
-    && pip install html5lib \
-    && pip install apscheduler
+RUN pip install requests bs4 html5lib apscheduler pytz
 
 # RUN apt-get update -y \
 #     && apt-get install -y tzdata
@@ -12,7 +9,7 @@ RUN pip install requests \
 
 # RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
 #     && echo $TZ > /etc/timezone \
-#     && dpkg-reconfigure -f noninteractive tzdata 
+#     && dpkg-reconfigure -f noninteractive tzdata    
 
 COPY app.py .
 
